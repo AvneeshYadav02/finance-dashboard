@@ -1,0 +1,50 @@
+{
+    "users": {
+        "1": {
+            "metadata": {
+                "name": "Avneesh",
+                "currency": "INR",
+                "current_balance": 5420.50
+            },
+            "transactions": [
+                {
+                    "id": "1",
+                    "date": "2026-03-25",
+                    "amount": 5000,
+                    "category": "Salary",
+                    "type": "income"
+                },
+                {
+                    "id": "2",
+                    "date": "2026-03-26",
+                    "amount": 120,
+                    "category": "Food",
+                    "type": "expense"
+                }
+            ]
+        },
+        "2": {
+            "metadata": {
+                "name": "Maya",
+                "currency": "INR",
+                "current_balance": 10000.00
+            },
+            "transactions": [
+                {
+                    "id": "1",
+                    "date": "2026-03-27",
+                    "amount": 2500,
+                    "category": "Freelance",
+                    "type": "income"
+                },
+                {
+                    "id": "2",
+                    "date": "2026-03-28",
+                    "amount": 800,
+                    "category": "Entertainment",
+                    "type": "expense"
+                }
+            ]
+        }
+    }
+}
