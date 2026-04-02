@@ -2,6 +2,3 @@
 venv/
 __pycache__/
 *.pyc
-
-# Node/Tailwind
-tailwind.config.js

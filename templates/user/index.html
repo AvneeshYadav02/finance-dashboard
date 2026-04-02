@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>USER DASHBOARD</h1>
+<div class="grid grid-cols-12 gap-6">
+    <div class="col-span-7 border border-border-main rounded-xl py-2">
+        {% if transactions %}
+        <table class="w-full px-2">
+            <thead class="border-b-2 border-border-main">
+                <tr>
+                    <th class="text-left">ID</th>
+                    <th class="text-center">Amount</th>
+                    <th class="text-center">Date</th>
+                    <th class="text-left">Category</th>
+                    <th class="text-left">Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in transactions %}
+                <tr>
+                    <td>{{ t.get('id', 0) }}</td>
+                    <td class="text-center">{{ t.get('amount', 0) }}</td>
+                    <td class="text-center">{{ t.get('date', "-") }}</td>
+                    <td>{{ t.get('category', "other") }}</td>
+                    <td>{{ t.get('type', "-") }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No transactions added yet</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

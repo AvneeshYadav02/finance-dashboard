@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en" class="{{ session.get('theme', 'light') }}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Tracker | {% block title %}{% endblock %}</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <style>
+        @keyframes bounce-in {
+            0% {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            50% {
+                transform: translateY(10px);
+                opacity: 1;
+            }
+
+            10% {
+                transform: translatey(0);
+            }
+        }
+
+        .animate-bounce-in {
+            animation: bounce-in 0.5s ease-out forwards;
+        }
+    </style>
+    <!-- Tailwind theme config -->
+    <style type="text/tailwindcss">
+        @theme {
+        --font-sans: 'Roboto', ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+      /* Semantic Primary Color (Mapping to Green) */
+        --color-primary-50: var(--color-green-50);
+        --color-primary-100: var(--color-green-100);
+        --color-primary-200: var(--color-green-200);
+        --color-primary-300: var(--color-green-300);
+        --color-primary-400: var(--color-green-400);
+        --color-primary-500: var(--color-green-500);
+        --color-primary-600: var(--color-green-600);
+        --color-primary-700: var(--color-green-700);
+        --color-primary-800: var(--color-green-800);
+        --color-primary-900: var(--color-green-900);
+        --color-primary-950: var(--color-green-950);
+
+      /* Semantic Layout Colors */
+        --color-backgroundh: var(--color-gray-200);
+        --color-backgroundl: var(--color-gray-100);
+        --color-surface: var(--color-white);
+
+      /* Semantic Text Colors */
+        --color-text-main: var(--color-gray-900);
+        --color-text-bright: var(--color-gray-200);
+        --color-text-muted: var(--color-gray-600);
+        --color-text-light: var(--color-gray-400);
+        --color-text-inverse: var(--color-white);
+
+      /* Semantic Border */
+        --color-border-main: var(--color-gray-300);
+
+      /* Semantic Alerts */
+        --color-danger-50: var(--color-red-50);
+        --color-danger-200: var(--color-red-200);
+        --color-danger-800: var(--color-red-800);
+
+        --color-success-50: var(--color-green-50);
+        --color-success-200: var(--color-green-200);
+        --color-success-800: var(--color-green-800);
+
+        --color-info-50: var(--color-blue-50);
+        --color-info-200: var(--color-blue-200);
+        --color-info-800: var(--color-blue-800);
+
+      /* contrast colors */
+        --color-contrast: var(--color-black);
+        --color-contrasttext: var(--color-white);
+    }
+    /* Redefine those same variables for Dark Mode */
+    .dark {
+        --color-backgroundh: var(--color-slate-950);
+        --color-backgroundl: var(--color-slate-900);
+        --color-surface: var(--color-slate-800);
+
+        --color-text-main: var(--color-slate-50);
+        --color-text-bright: var(--color-slate-100);
+        --color-text-muted: var(--color-slate-600);
+        --color-text-light: var(--color-slate-300);
+
+        --color-border-main: var(--color-slate-700);
+
+        --color-contrast: var(--color-white);
+        --color-contrasttext: var(--color-black);
+    }
+    </style>
+
+    <!-- Google Fonts – Roboto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+</head>
+
+<body class="bg-backgroundh transition-colors duration-200">
+    <div id="toast-container"
+        class="animate-bounce-in fixed top-20 left-1/2 z-[100] flex flex-col gap-3 pointer-events-none">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for catagory, message in messages %}
+        {% if catagory == 'mode-switch' %}
+        <div
+            class="flex items-center justify-center w-fit bg-contrasttext px-5 py-2 rounded-xl border-2 border-contrast">
+            <span class="material-symbols-outlined text-contrast mr-5">info</span>
+            <p class="font-medium text-contrast tracking-wider">Switched to <span
+                    class="font-extrabold {{ 'text-success-800' if message=='user' else 'text-info-800' }}">{{
+                    message|title }}</span>
+                Mode</p>
+        </div>
+        {% endif %}
+        {% endfor %}
+        {% endif%}
+        {% endwith %}
+    </div>
+    <aside
+        class="h-screen w-70 fixed left-0 top-0 bg-backgroundl flex flex-col p-4 border-r border-border-main text-sm font-medium z-50 transition-colors duration-200">
+        <div class="mb-10 px-4 flex items-center gap-3">
+            <div class="w-10 h-10 bg-primary-700 rounded-xl flex items-center justify-center text-surface">
+                <span class="material-symbols-outlined" style="font-size: 30px;">architecture</span>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight text-primary-700 leading-4">
+                    Fin Man</h1>
+                <p class="text-xs uppercase tracking-widest text-text-main mt-1 opacity-70">Finance Manager</p>
+            </div>
+        </div>
+        <nav class="flex-1 space-y-2">
+            <a class="flex items-center gap-3 px-4 py-3 text-lg text-primary-600 rounded-xl font-bold {% if active_page=='dashboard' %}pointer-events-none bg-backgroundh border border-border-main transition-colors duration-200 {% else %} hover:scale-105 hover:bg-backgroundh transition-all duration-200 active:scale-80 {% endif %}"
+                href="{{ url_for('dashboard') }}">
+                <span class="material-symbols-outlined" style="font-size: 30px;">home</span>
+                <span>Home</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-lg text-primary-600 rounded-xl font-bold hover:scale-105 hover:bg-backgroundh transition-all duration-200 active:scale-80"
+                href="#">
+                <span class="material-symbols-outlined" style="font-size: 30px;">history_edu</span>
+                <span>Log</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-lg text-primary-600 rounded-xl font-bold hover:scale-105 hover:bg-backgroundh transition-all duration-200 active:scale-80"
+                href="#">
+                <span class="material-symbols-outlined" style="font-size: 30px;">leaderboard</span>
+                <span>Stats</span>
+            </a>
+        </nav>
+        <a href="/switch-role/{{ 'user' if role=='admin' else 'admin' }}" class="mt-auto">
+            <div
+                class="flex justify-center items-center gap-2 w-full bg-gradient-to-bl from-primary-600 to-primary-700 text-text-inverse px-7 py-2 rounded-xl hover:from-primary-700 hover:to-primary-600 hover:shadow-2xl active:scale-80  transition-all">
+                <span class="material-symbols-outlined">change_circle</span>
+                <p class="font-extrabold">
+                    Switch Role
+                </p>
+            </div>
+        </a>
+    </aside>
+    <header
+        class="fixed top-0 right-0 left-70 z-40 bg-surface/80 backdrop-blur-md border-b border-border-main flex justify-between items-center h-16 px-8 transition-colors duration-200">
+        <div class="flex items-center gap-4">
+            <h2 class="text-lg font-black text-text-main">{{ active_page | title }}</h2>
+        </div>
+        <div class="flex items-center gap-6">
+            <button
+                class="flex items-center p-2 rounded-xl bg-gradient-to-br from-contrast to-contrast/60 text-contrasttext hover:from-contrast/60 hover:to-contrast hover:cursor-pointer active:scale-80 transition-all"
+                onclick="toggleTheme()">
+                <span id="theme-icon" class="material-symbols-outlined">{{ 'light_mode' if session.get('theme')=='dark'
+                    else 'dark_mode'
+                    }}</span>
+            </button>
+            <button
+                class="bg-gradient-to-bl from-primary-600 to-primary-700 text-text-inverse px-6 py-2 rounded-xl font-bold text-sm transition-all hover:cursor-pointer hover:from-primary-700 hover:to-primary-600 active:scale-80 flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+                Quick Add
+            </button>
+            <div>
+                <p class="text-text-main font-medium tracking-tight text-lg">{{ "Admin" if role=='admin' else "User" }}
+                </p>
+            </div>
+            <div class="w-10 h-10 rounded-full border-2 border-contrast p-0.5 transition-colors duration-200">
+                <img alt="User Avatar" class="w-full h-full rounded-full object-cover"
+                    data-alt="professional headshot of a smiling middle-aged man in a dark business suit with soft natural studio lighting"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYxUA34hGC1XrkZyFZl-eUdJXWXhTTLW2EmC6xqnOhJxC1GRmopkTNpPr8ulpJdGgpPlXWYRIp3V-dbqAs_Nt3R1fQ08uU8z4m_R3kImbzieowK5Bw6gkQxWJdVVKQw9jE_NddBjvPc3fvgxB6z-DYbmO8OFcBS_D5MY2HauJUQjdzeAsnk6PYBmj64p6V9yWKoKSHt6UyYx4MIKLhTMlFngJGrXF7bs4mCoGpzto27XyJ692JyCwLyNIIHNQfbiqVsmXTY72mnPg" />
+            </div>
+        </div>
+    </header>
+    <main class="ml-70 mt-15 px-5 py-4">
+        {% block content %}{% endblock %}
+    </main>
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const iconSpan = document.getElementById('theme-icon')
+            // toggle dark class
+            const isDark = html.classList.toggle('dark');
+
+            // toggle theme icon
+            iconSpan.innerText = isDark ? "light_mode" : "dark_mode";
+
+            // for flask
+            const newTheme = isDark ? 'dark' : 'light';
+            fetch(`/switch-theme/${newTheme}`)
+        }
+    </script>
+    <script>
+        setTimeout(() => {
+            const toasts = document.querySelectorAll("#toast-container > div");
+            toasts.forEach(t => {
+                t.style.transition = "all 0.5s ease-in-out";
+
+                t.style.opacity = '0';
+                t.style.transform = 'translateY(-20px)'
+                setTimeout(() => t.remove(), 1000);
+            });
+        }, 1500);
+    </script>
+</body>
+
+</html>
