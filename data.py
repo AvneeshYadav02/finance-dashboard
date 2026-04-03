@@ -95,9 +95,9 @@ class TransactionManager:
 
         if old_balance != 0:
             balance_change = (((current_balance-old_balance)/old_balance)*100)
-            balance_change = f"{str(round(balance_change, 2))}%"
+            balance_change = round(balance_change, 2)
         else:
-            balance_change = f"{currency} {str(round(current_balance, 2))}"
+            balance_change = round(current_balance, 2)
         return {"income": income, "expense": expense, "balance": current_balance, "change":balance_change}
 
     # adds a new user to the JSON database, returns user_id in case of successs
@@ -157,14 +157,17 @@ class TransactionManager:
     # catagorical breakdown of user expenditure, return a dictionary where key=catagory, value=total_expenditure
     def catBreakdown(self,user_id):
         user = self.getUser(user_id)
+        if not user:
+            return {}
         transactions = user.get("transactions", [])
         breakdown = {}
 
         for t in transactions:
             current_cat = t.get("category", "other")
-            amount = (t["amount"] if t["type"]=="income" else -t["amount"])
+            if t["type"]=="expense":
+                amount = t["amount"]
 
-            breakdown[t["category"]] = breakdown.get(current_cat, 0) + amount
+                breakdown[t["category"]] = breakdown.get(current_cat, 0) + amount
         return breakdown
 """
 TODO:

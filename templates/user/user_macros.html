@@ -1,0 +1,56 @@
+{% macro kpi_cards(title, value, icon=None, trend=None, abt_money=false) %}
+<div
+    class="flex flex-col gap-2 bg-surface p-4 rounded-xl border border-border-main shadow-sm shadow-contrast/10 hover:shadow-lg transition-all">
+    <div class="flex items-center justify-start opacity-80">
+        {% if icon %}
+        <span class="material-symbols-outlined text-primary-600 font-bold text-sm lg:text-lg">{{ icon }}</span>
+        {% endif %}
+        <p class="text-xs lg:text-lg font-bold text-primary-600 ml-2 uppercase tracking-wider">{{ title }}</p>
+    </div>
+    <div class="flex items-baseline justify-between mt-2">
+        <h2 class="text-2xl lg:text-4xl font-black text-text-main">
+            <span class="text-lg lg:text-2xl opacity-50 mr-1">{{ "₹" if abt_money else "" }}</span>{{ value if value
+            else "0" }}
+        </h2>
+        {% if trend %}
+        <span
+            class="text-[10px] lg:text-xs font-bold px-2 py-1 rounded-full {{ 'bg-success-200 text-success-800' if trend > 0 else 'bg-danger-200 text-danger-800' }}">
+            {{ "+" if trend > 0 else ""}}{{ trend }}%
+        </span>
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}
+
+{% macro data_table(headers, rows, actions=False) %}
+<div class="overflow-x-auto overflow-y-auto w-full border-t border-border-main max-h-120">
+    <table class="w-full text-sm text-left min-w-200">
+        {% if rows %}
+        <thead class="sticky top-0 bg-backgroundl text-text-muted border-b border-border-main">
+            <tr>
+                {% for header in headers %}
+                <th class="px-4 lg:px-6 py-4 font-bold uppercase tracking-widest text-[10px] text-center">{{ header }}
+                </th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-border-main">
+            {% for row in rows %}
+            <tr class="bg-surface h-20 hover:bg-backgroundl/30 transition-colors group">
+                {% for key in row.keys() %}
+                <td class="px-4 lg:px-6 py-4 text-text-main text-center font-medium">
+                    {{ row.get(key, "-") }}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+        {% else %}
+        <div class="flex flex-col items-center justify-center py-16 bg-backgroundl/10">
+            <span class="material-symbols-outlined text-text-light text-5xl mb-2">folder_off</span>
+            <p class="text-text-muted tracking-widest text-sm font-bold uppercase">No records found</p>
+        </div>
+        {% endif %}
+    </table>
+</div>
+{% endmacro %}

@@ -1,34 +1,91 @@
+{% import "user/user_macros.html" as ui %}
+
 {% extends "base.html" %}
 {% block content %}
-<h1>USER DASHBOARD</h1>
-<div class="grid grid-cols-12 gap-6">
-    <div class="col-span-7 border border-border-main rounded-xl py-2">
-        {% if transactions %}
-        <table class="w-full px-2">
-            <thead class="border-b-2 border-border-main">
-                <tr>
-                    <th class="text-left">ID</th>
-                    <th class="text-center">Amount</th>
-                    <th class="text-center">Date</th>
-                    <th class="text-left">Category</th>
-                    <th class="text-left">Type</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for t in transactions %}
-                <tr>
-                    <td>{{ t.get('id', 0) }}</td>
-                    <td class="text-center">{{ t.get('amount', 0) }}</td>
-                    <td class="text-center">{{ t.get('date', "-") }}</td>
-                    <td>{{ t.get('category', "other") }}</td>
-                    <td>{{ t.get('type', "-") }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <p>No transactions added yet</p>
-        {% endif %}
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-10">
+
+    <div class="col-span-1 lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-10">
+        {{ ui.kpi_cards("Balance", user_stats["balance"], "account_balance", user_stats["change"], true) }}
+        {{ ui.kpi_cards("Income", user_stats["income"], "currency_rupee_circle", None, true) }}
+        {{ ui.kpi_cards("Expense", user_stats["expense"], "receipt_long", None, true) }}
+    </div>
+
+    <div
+        class="col-span-1 lg:col-span-5 lg:row-span-2 h-fit bg-surface border border-border-main rounded-xl shadow-md overflow-hidden">
+        <div class="flex justify-start items-center px-4 py-3 border-b border-border-main">
+            <span class="material-symbols-outlined text-primary-700" style="font-size: 24px;">pie_chart</span>
+            <p class="text-primary-700 text-lg px-2 font-medium">Expenditure</p>
+        </div>
+
+        <div class="bg-surface p-4 lg:p-10 h-64 lg:h-80 w-full">
+            <canvas id="cat-chart"></canvas>
+        </div>
+
+        <div class="p-4 bg-backgroundl/20 space-y-2">
+            <h3 class="text-text-main/50 text-xs uppercase tracking-widest font-bold mb-3">Top Spending Categories</h3>
+            {% for key in cat_breakdown %}
+            <div
+                class="flex items-center justify-between bg-surface p-3 rounded-xl border border-border-main shadow-sm">
+                <p class="text-text-main font-medium text-sm">{{ key | title() }}</p>
+                <p class="text-text-main font-bold text-sm">₹ {{ cat_breakdown[key] }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="col-span-1 lg:col-span-7 overflow-x-auto">
+        {% set header_data = ['ID', 'Date', 'Amount', 'Category', 'Type'] %}
+        <div class="bg-surface rounded-xl border border-border-main shadow-md min-w-[600px] lg:min-w-0">
+            <div class="flex items-center justify-start border-b border-border-main pl-4 py-3">
+                <span class="material-symbols-outlined text-primary-700" style="font-size: 24px;">data_table</span>
+                <p class="text-primary-700 text-lg px-2 font-medium">Recent Activity</p>
+            </div>
+
+            <div class="overflow-x-auto">
+                {{ ui.data_table(header_data, transactions) }}
+            </div>
+
+            <div class="flex items-center justify-end py-3 px-4 border-t border-border-main">
+                <a href="{{ url_for('log') }}"
+                    class="flex items-center gap-1 text-primary-700 rounded-lg px-3 py-1 text-sm font-bold hover:bg-primary-50 transition-all">
+                    VIEW ALL
+                    <span class="material-symbols-outlined" style="font-size: 18px;">arrow_forward</span>
+                </a>
+            </div>
+        </div>
     </div>
 </div>
+<script>
+    let cat_chart;
+    const ctx = document.getElementById("cat-chart").getContext('2d');
+
+    cat_chart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ cat_labels| tojson }},
+        datasets: [{
+            label: 'Expenses by Category',
+            data: {{ cat_values| tojson }},
+        backgroundColor: [
+            '#3b82f6', '#ef4444', '#10b981', '#6366f1', '#f59e0b', '#8b5cf6'
+        ],
+        borderWidth: 0,
+        hoverOffset: 10,
+            }]
+        },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'right',
+                labels: {
+                    color: document.documentElement.classList.contains('dark') ? "#ffffff" : "#000000",
+                    useBorderRadius: true
+                }
+            }
+        }
+    }
+    });
+</script>
 {% endblock %}
