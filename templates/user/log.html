@@ -1,0 +1,138 @@
+{% import "user/user_macros.html" as ui %}
+
+{% extends "base.html" %}
+{% block content %}
+<div class="flex flex-col gap-4 lg:gap-6 justify-start w-full">
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6">
+        {{ ui.kpi_cards("Balance", user_stats["balance"], "account_balance", user_stats["change"], true) }}
+        {{ ui.kpi_cards("Total Logs", transactions_count , "list_alt", None, false) }}
+        {{ ui.kpi_cards("Last Entry", last_transaction_date , "calendar_today", None, false) }}
+    </div>
+
+    <div class="h-fit bg-surface border border-border-main rounded-xl shadow-md overflow-hidden">
+        <div class="flex justify-start items-center px-4 py-3 border-b border-border-main bg-surface">
+            <span class="material-symbols-outlined text-primary-700" style="font-size: 24px;">bar_chart</span>
+            <p class="text-primary-700 text-lg px-2 font-bold uppercase tracking-tight">Analytics</p>
+        </div>
+        <div class="bg-backgroundl p-4 lg:p-10 h-64 lg:h-96 w-full">
+            <canvas id="log-chart"></canvas>
+        </div>
+    </div>
+
+    <div class="w-full">
+        {% set header_data = ['ID', 'Date', 'Amount', 'Category', 'Type'] %}
+        <div class="bg-surface rounded-xl border border-border-main shadow-md overflow-hidden">
+
+            <div
+                class="flex flex-col lg:flex-row items-start lg:items-center justify-between border-b border-border-main p-4 gap-4">
+                <div class="inline-flex items-center">
+                    <span class="material-symbols-outlined text-primary-700" style="font-size: 24px;">database</span>
+                    <p class="text-primary-700 text-lg px-2 font-bold uppercase tracking-tight">Records</p>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                    <div class="relative w-full lg:w-80">
+                        <span
+                            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-light text-sm">search</span>
+                        <input type="text" id="logSearch" placeholder="Search records..."
+                            class="block w-full pl-10 pr-4 py-2 text-sm text-text-main border-2 border-primary-700/30 rounded-full bg-backgroundl focus:border-primary-700 focus:bg-surface focus:outline-none transition-all">
+                    </div>
+
+                    <a href="/export-trans-logs/{{ user_id }}" class="w-full sm:w-auto">
+                        <div
+                            class="flex items-center justify-center gap-2 text-primary-700 bg-backgroundl px-5 py-2 border-2 border-primary-700 rounded-full hover:bg-primary-700 hover:text-white active:scale-95 transition-all">
+                            <span class="material-symbols-outlined text-sm">download</span>
+                            <span class="text-xs font-bold uppercase">Export CSV</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                {{ ui.data_table(header_data, transactions) }}
+            </div>
+
+            <div class="py-3 bg-backgroundl/20 border-t border-border-main"></div>
+        </div>
+    </div>
+</div>
+<!-- Scripts -->
+<script>
+    document.getElementById("logSearch").addEventListener('input', function () {
+        const SearchTerm = this.value.toLowerCase();
+
+        const tableBody = document.querySelector('table tbody');
+        if (!tableBody) return;
+
+        const rows = tableBody.querySelectorAll('tr');
+
+        rows.forEach(row => {
+            const rowData = row.textContent.toLowerCase();
+
+            if (rowData.includes(SearchTerm)) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    });
+</script>
+<script>
+    let log_chart;
+
+    const ctx = document.getElementById("log-chart").getContext('2d');
+
+    log_chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ cat_labels| tojson }},
+        datasets: [{
+            label: "",
+            data: {{ cat_values| tojson }},
+        backgroundColor: [
+            '#3b82f680', '#ef444480', '#10b98180', '#f59e0b80', '#6366f180', '#8b5cf680'
+        ],
+        borderColor: [
+            '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#6366f1', '#8b5cf6'
+        ],
+        borderWidth: 2,
+        borderRadius: 20,
+        maxBarThickness: 120,
+        hoverOffset: 10
+            }]
+        },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                grace: '10%',
+                grid: {
+                    display: false
+                },
+                ticks: {
+                    color: document.documentElement.classList.contains('dark') ? '#ffffff56' : '#0000004D'
+                },
+                border: {
+                    color: document.documentElement.classList.contains('dark') ? '#ffffff33' : '#0000004D'
+                }
+            },
+            x: {
+                grid: { display: false }, // Usually looks cleaner on bar charts
+                ticks: {
+                    color: document.documentElement.classList.contains('dark') ? '#ffffff56' : '#0000004D'
+                },
+                border: {
+                    color: document.documentElement.classList.contains('dark') ? '#ffffff33' : '#0000004D'
+                }
+            }
+        },
+        plugins: {
+            legend: { display: false }
+        }
+    }
+    });
+</script>
+{% endblock %}

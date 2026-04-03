@@ -7,6 +7,7 @@
     <title>Finance Tracker | {% block title %}{% endblock %}</title>
 
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         @keyframes bounce-in {
@@ -112,95 +113,102 @@
 
 <body class="bg-backgroundh transition-colors duration-200">
     <div id="toast-container"
-        class="animate-bounce-in fixed top-20 left-1/2 z-[100] flex flex-col gap-3 pointer-events-none">
+        class="animate-bounce-in fixed top-5 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-3 pointer-events-none w-full max-w-[90%] items-center">
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-        {% for catagory, message in messages %}
-        {% if catagory == 'mode-switch' %}
-        <div
-            class="flex items-center justify-center w-fit bg-contrasttext px-5 py-2 rounded-xl border-2 border-contrast">
-            <span class="material-symbols-outlined text-contrast mr-5">info</span>
-            <p class="font-medium text-contrast tracking-wider">Switched to <span
-                    class="font-extrabold {{ 'text-success-800' if message=='user' else 'text-info-800' }}">{{
-                    message|title }}</span>
-                Mode</p>
-        </div>
-        {% endif %}
+        {% for category, message in messages %}
         {% endfor %}
-        {% endif%}
+        {% endif %}
         {% endwith %}
     </div>
-    <aside
-        class="h-screen w-70 fixed left-0 top-0 bg-backgroundl flex flex-col p-4 border-r border-border-main text-sm font-medium z-50 transition-colors duration-200">
+
+    <aside id="sidebar"
+        class="h-screen w-70 fixed left-0 top-0 bg-backgroundl flex flex-col p-4 border-r border-border-main text-sm font-medium z-50 transition-all duration-300 -translate-x-full lg:translate-x-0">
+
+        <button class="lg:hidden absolute top-4 right-4 text-primary-700" onclick="toggleSidebar()">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+
         <div class="mb-10 px-4 flex items-center gap-3">
-            <div class="w-10 h-10 bg-primary-700 rounded-xl flex items-center justify-center text-surface">
-                <span class="material-symbols-outlined" style="font-size: 30px;">architecture</span>
+            <div class="w-10 h-10 bg-primary-700 rounded-xl flex items-center justify-center text-surface shadow-lg">
+                <span class="material-symbols-outlined" style="font-size: 30px;">diamond</span>
             </div>
             <div>
-                <h1 class="text-xl font-bold tracking-tight text-primary-700 leading-4">
-                    Fin Man</h1>
+                <h1 class="text-xl font-bold tracking-tight text-primary-700 leading-4">Fin Man</h1>
                 <p class="text-xs uppercase tracking-widest text-text-main mt-1 opacity-70">Finance Manager</p>
             </div>
         </div>
+
         <nav class="flex-1 space-y-2">
-            <a class="flex items-center gap-3 px-4 py-3 text-lg text-primary-600 rounded-xl font-bold {% if active_page=='dashboard' %}pointer-events-none bg-backgroundh border border-border-main transition-colors duration-200 {% else %} hover:scale-105 hover:bg-backgroundh transition-all duration-200 active:scale-80 {% endif %}"
+            <a class="flex items-center gap-3 px-4 py-3 text-lg text-primary-600 rounded-xl font-bold {% if active_page=='dashboard' %}bg-backgroundh border border-border-main{% else %} hover:bg-backgroundh active:scale-95 transition-all {% endif %}"
                 href="{{ url_for('dashboard') }}">
-                <span class="material-symbols-outlined" style="font-size: 30px;">home</span>
+                <span class="material-symbols-outlined">home</span>
                 <span>Home</span>
             </a>
-            <a class="flex items-center gap-3 px-4 py-3 text-lg text-primary-600 rounded-xl font-bold hover:scale-105 hover:bg-backgroundh transition-all duration-200 active:scale-80"
-                href="#">
-                <span class="material-symbols-outlined" style="font-size: 30px;">history_edu</span>
+            <a class="flex items-center gap-3 px-4 py-3 text-lg text-primary-600 rounded-xl font-bold {% if active_page=='log' %}bg-backgroundh border border-border-main{% else %} hover:bg-backgroundh active:scale-95 transition-all {% endif %}"
+                href="{{ url_for('log') }}">
+                <span class="material-symbols-outlined">history_edu</span>
                 <span>Log</span>
             </a>
-            <a class="flex items-center gap-3 px-4 py-3 text-lg text-primary-600 rounded-xl font-bold hover:scale-105 hover:bg-backgroundh transition-all duration-200 active:scale-80"
-                href="#">
-                <span class="material-symbols-outlined" style="font-size: 30px;">leaderboard</span>
-                <span>Stats</span>
-            </a>
         </nav>
+
         <a href="/switch-role/{{ 'user' if role=='admin' else 'admin' }}" class="mt-auto">
             <div
-                class="flex justify-center items-center gap-2 w-full bg-gradient-to-bl from-primary-600 to-primary-700 text-text-inverse px-7 py-2 rounded-xl hover:from-primary-700 hover:to-primary-600 hover:shadow-2xl active:scale-80  transition-all">
+                class="flex justify-center items-center gap-2 w-full bg-gradient-to-bl from-primary-600 to-primary-700 text-text-inverse px-4 py-3 rounded-xl shadow-md active:scale-95 transition-all">
                 <span class="material-symbols-outlined">change_circle</span>
-                <p class="font-extrabold">
-                    Switch Role
-                </p>
+                <p class="font-extrabold text-xs">Switch Role</p>
             </div>
         </a>
     </aside>
+
     <header
-        class="fixed top-0 right-0 left-70 z-40 bg-surface/80 backdrop-blur-md border-b border-border-main flex justify-between items-center h-16 px-8 transition-colors duration-200">
-        <div class="flex items-center gap-4">
-            <h2 class="text-lg font-black text-text-main">{{ active_page | title }}</h2>
-        </div>
-        <div class="flex items-center gap-6">
-            <button
-                class="flex items-center p-2 rounded-xl bg-gradient-to-br from-contrast to-contrast/60 text-contrasttext hover:from-contrast/60 hover:to-contrast hover:cursor-pointer active:scale-80 transition-all"
-                onclick="toggleTheme()">
-                <span id="theme-icon" class="material-symbols-outlined">{{ 'light_mode' if session.get('theme')=='dark'
-                    else 'dark_mode'
-                    }}</span>
+        class="fixed top-0 right-0 left-0 lg:left-70 z-40 bg-surface/80 backdrop-blur-md border-b border-border-main flex justify-between items-center h-16 px-4 lg:px-8 transition-all duration-200">
+        <div class="flex items-center gap-2">
+            <button class="lg:hidden text-primary-700 p-1" onclick="toggleSidebar()">
+                <span class="material-symbols-outlined">menu</span>
             </button>
-            <button
-                class="bg-gradient-to-bl from-primary-600 to-primary-700 text-text-inverse px-6 py-2 rounded-xl font-bold text-sm transition-all hover:cursor-pointer hover:from-primary-700 hover:to-primary-600 active:scale-80 flex items-center gap-2">
-                <span class="material-symbols-outlined text-sm" data-icon="add">add</span>
-                Quick Add
-            </button>
-            <div>
-                <p class="text-text-main font-medium tracking-tight text-lg">{{ "Admin" if role=='admin' else "User" }}
-                </p>
+            <div class="hidden sm:flex items-center gap-1">
+                <h2 class="text-sm lg:text-lg font-black text-text-main">{{ role | title }}</h2>
+                <span class="material-symbols-outlined text-text-main text-sm">arrow_right_alt</span>
+                <h2 class="text-sm lg:text-lg font-black text-text-main">{{ active_page | title }}</h2>
             </div>
-            <div class="w-10 h-10 rounded-full border-2 border-contrast p-0.5 transition-colors duration-200">
-                <img alt="User Avatar" class="w-full h-full rounded-full object-cover"
-                    data-alt="professional headshot of a smiling middle-aged man in a dark business suit with soft natural studio lighting"
+        </div>
+
+        <div class="flex items-center gap-3 lg:gap-6">
+            <button
+                class="flex items-center rounded-xl bg-contrast text-contrasttext p-2 active:scale-80 transition-all"
+                onclick="toggleTheme()">
+                <span id="theme-icon" class="material-symbols-outlined text-[20px]">{{ 'light_mode' if
+                    session.get('theme')=='dark' else 'dark_mode' }}</span>
+            </button>
+
+            {% if role == 'admin'%}
+            <button
+                class="bg-primary-700 text-text-inverse px-3 lg:px-6 py-2 rounded-xl font-bold text-xs lg:text-sm active:scale-95 flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">add</span>
+                <span class="hidden sm:inline">Quick Add</span>
+            </button>
+            {% endif %}
+
+            <div class="w-8 h-8 lg:w-10 lg:h-10 rounded-full border-2 border-contrast p-0.5 overflow-hidden">
+                <img alt="User" class="w-full h-full rounded-full object-cover"
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYxUA34hGC1XrkZyFZl-eUdJXWXhTTLW2EmC6xqnOhJxC1GRmopkTNpPr8ulpJdGgpPlXWYRIp3V-dbqAs_Nt3R1fQ08uU8z4m_R3kImbzieowK5Bw6gkQxWJdVVKQw9jE_NddBjvPc3fvgxB6z-DYbmO8OFcBS_D5MY2HauJUQjdzeAsnk6PYBmj64p6V9yWKoKSHt6UyYx4MIKLhTMlFngJGrXF7bs4mCoGpzto27XyJ692JyCwLyNIIHNQfbiqVsmXTY72mnPg" />
             </div>
         </div>
     </header>
-    <main class="ml-70 mt-15 px-5 py-4">
+
+    <main class="lg:ml-70 mt-16 p-4 lg:p-10 transition-all">
         {% block content %}{% endblock %}
     </main>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+            sidebar.classList.toggle('shadow-[0_0_50px_rgba(0,0,0,0.5)]');
+        }
+
+        // ... existing toggleTheme() script ...
+    </script>
     <script>
         function toggleTheme() {
             const html = document.documentElement;
@@ -208,19 +216,39 @@
             // toggle dark class
             const isDark = html.classList.toggle('dark');
 
-            // toggle theme icon
-            iconSpan.innerText = isDark ? "light_mode" : "dark_mode";
-
             // for flask
             const newTheme = isDark ? 'dark' : 'light';
             fetch(`/switch-theme/${newTheme}`)
+
+            // toggle theme icon
+            iconSpan.innerText = isDark ? "light_mode" : "dark_mode";
+
+            // toggle chart text color
+            if (typeof cat_chart !== 'undefined' && cat_chart) {
+                cat_chart.options.plugins.legend.labels.color = isDark ? "#ffffff" : "#000000";
+
+                // 3. Re-render the chart with the new settings
+                cat_chart.update();
+            }
+
+            if (typeof log_chart !== 'undefined' && log_chart) {
+
+                // 4. Re-render the chart with the new settings
+                log_chart.options.scales.y.border.color = isDark ? '#ffffff71' : '#0000004D';
+                log_chart.options.scales.y.ticks.color = isDark ? '#ffffff33' : '#0000004D';
+
+                log_chart.options.scales.x.ticks.color = isDark ? '#ffffff56' : '#00000053';
+                log_chart.options.scales.x.border.color = isDark ? '#ffffff33' : '#0000004D';
+
+                log_chart.update();
+            }
         }
     </script>
     <script>
         setTimeout(() => {
             const toasts = document.querySelectorAll("#toast-container > div");
             toasts.forEach(t => {
-                t.style.transition = "all 0.5s ease-in-out";
+                t.style.transition = "all 0.1s ease-in-out";
 
                 t.style.opacity = '0';
                 t.style.transform = 'translateY(-20px)'
