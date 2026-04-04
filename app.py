@@ -26,10 +26,26 @@ def dashboard():
     role = session.get("role", "user")
 
     if role == "admin":
-        return render_template("admin/index.html", active_page="dashboard", role=role)
+        sys_stats = tm.getFullStats()
+
+        cat = sys_stats["categorical_volume"]
+        cat_labels = list(cat.keys())
+        cat_values = [val for val in cat.values()]
+
+        user_logs = tm.getUserLogs()
+
+        return render_template(
+            "admin/index.html",
+            active_page="dashboard",
+            role=role,
+            cat_labels=cat_labels,
+            cat_values=cat_values,
+            sys_stats=sys_stats,
+            user_logs=user_logs,
+        )
     else:
         # hardcoded user_id for sample usage
-        user_id = 1
+        user_id = 2
         if not tm.getUser(user_id):
             flash("Invalid user", "404")
         user_stats = tm.getStats(user_id=user_id)
@@ -60,9 +76,26 @@ def log():
     role = session.get("role", "user")
 
     if role == "admin":
-        return render_template("admin/log.html")
+        sys_stats = tm.getFullStats()
+
+        user_logs = tm.getUserLogs()
+
+        user_names = [user["name"] for user in user_logs]
+        user_incomes = [user["income"] for user in user_logs]
+        user_expenses = [user["expense"] for user in user_logs]
+
+        return render_template(
+            "admin/log.html",
+            role=role,
+            sys_stats=sys_stats,
+            active_page="log",
+            user_logs=user_logs,
+            user_names=user_names,
+            user_incomes=user_incomes,
+            user_expenses=user_expenses,
+        )
     else:
-        user_id = 1
+        user_id = 2
         if not tm.getUser(user_id):
             flash("Invalid user!", "404")
             return render_template(
@@ -112,6 +145,123 @@ def log():
             cat_labels=cat_labels,
             cat_values=cat_values,
         )
+
+
+@app.route("/delete-user/<int:u_id>")
+def delete_user(u_id):
+    rm = tm.removeUser(u_id)
+    return redirect(url_for("log"))
+
+
+@app.route("/add-user", methods=["POST", "GET"])
+def add_user():
+    role = session.get("role")
+
+    if request.method == "POST":
+        user_name = request.form.get("name")
+        user_balance = request.form.get("balance")
+
+        if not (user_name or user_balance):
+            flash("Please Fill All the Fields", "empty-fields")
+            return render_template(
+                "/admin/add_user.html", active_page="Add User", role=role
+            )
+
+        new_user = tm.addUser(user_name=user_name, user_balance=user_balance)
+
+        return render_template(
+            "admin/new_user.html",
+            role=role,
+            active_page=new_user["metadata"]["name"],
+            user=new_user,
+        )
+
+    else:
+        return render_template(
+            "/admin/add_user.html", active_page="Add User", role=role
+        )
+
+
+@app.route("/add-transaction/<int:u_id>", methods=["POST", "GET"])
+def add_transaction(u_id):
+    if request.method == "POST":
+        t_amount = int(request.form.get("amount"))
+        t_category = (request.form.get("category")).title()
+        t_type = (request.form.get("type")).lower()
+
+        tm.addTransaction(
+            user_id=u_id, tx_amount=t_amount, tx_category=t_category, tx_type=t_type
+        )
+
+        return redirect(f"/view-user/{u_id}")
+    else:
+        role = "admin"
+        user = tm.getUser(u_id)
+        user_name = user["metadata"]["name"]
+        user_currency = user["metadata"]["currency"]
+
+        return render_template(
+            "admin/add_transaction.html",
+            role=role,
+            user_id=u_id,
+            user_currency=user_currency,
+            active_page=user_name,
+        )
+
+
+@app.route("/view-user/<int:u_id>")
+def view_user(u_id):
+    user_id = u_id
+    user = tm.getUser(user_id)
+    user_name = user["metadata"]["name"]
+    role = "admin"
+    if not tm.getUser(user_id):
+        flash("Invalid user!", "404")
+        return render_template(
+            "user/log.html",
+            active_page=user_name,
+            user_id=user_id,
+            role=role,
+            user_stats={},
+            transactions=[],
+            transactions_count="--",
+            last_transaction_date="--",
+            cat_labels=[],
+            cat_values=[],
+        )
+
+    user_stats = tm.getStats(user_id)
+    transactions = tm.getTransactions(user_id)
+
+    transactions_count = len(transactions)
+    # last_transaction_date = None
+
+    if transactions:
+        last_transaction_date = max(t.get("date", "0000-00-00") for t in transactions)
+    else:
+        last_transaction_date = "No Transactions found"
+
+    breakdown = tm.catBreakdown(user_id=user_id)
+
+    cat_breakdown = dict(
+        sorted(breakdown.items(), key=lambda item: item[1], reverse=True)
+    )
+
+    cat_labels = list(cat_breakdown.keys())
+    cat_values = [val for val in cat_breakdown.values()]
+
+    return render_template(
+        "admin/view_user.html",
+        active_page=user_name,
+        user_id=user_id,
+        role=role,
+        user_stats=user_stats,
+        transactions=transactions,
+        transactions_count=transactions_count,
+        last_transaction_date=last_transaction_date,
+        cat_labels=cat_labels,
+        cat_values=cat_values,
+    )
 
 
 @app.route("/switch-role/<role>")

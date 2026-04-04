@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="mb-6">
+        <a href="{{ url_for('dashboard') }}"
+            class="flex items-center gap-2 text-text-muted hover:text-primary-700 transition-colors group">
+            <span class="material-symbols-outlined text-sm">arrow_left_alt</span>
+            <span class="font-medium">Back to Dashboard</span>
+        </a>
+    </div>
+
+    <div class="bg-surface rounded-xl border border-border-main shadow-md overflow-hidden">
+        <div class="flex flex-col gap-8  items-center justify-start border-b border-border-main px-6 py-4 bg-backgroundl/30">
+            <h1 class="text-primary-800/80 text-5xl text-center">
+                {{ user["metadata"]["name"] }}
+            </h1>
+            <h1 class="text-contrast/80 text-3xl text-center">
+                -- ₹ {{ user["metadata"]["current_balance"] }} --
+            </h1>
+        </div>
+    </div>
+</div>
+{% endblock %}

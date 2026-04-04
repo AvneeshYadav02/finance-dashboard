@@ -1,1 +1,97 @@
-{% extends 'base.html' %}
+{% import "admin/admin_macros.html" as ui %}
+
+{% extends "base.html" %}
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-10">
+    <div class="flex flex-col gap-10 col-span-1 lg:col-span-7">
+        <!-- KPI CARDS -->
+        <div class=" grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-10 h-fit">
+            {{ ui.kpi_cards("Total Volume", sys_stats["total_volume"], "payments", None, true) }}
+            {{ ui.kpi_cards("Active Users", sys_stats["total_users"], "group", None, false) }}
+        </div>
+
+        <!-- LOG TABLE -->
+        <div class="overflow-x-auto">
+            {% set header_data = ['ID', 'User', 'Balance (₹)', 'Income (₹)', 'Expense (₹)'] %}
+            <div class="bg-surface rounded-xl border border-border-main shadow-md min-w-[700px] lg:min-w-0">
+                <div class="flex items-center justify-between border-b border-border-main px-4 py-3">
+                    <div class="flex items-center">
+                        <span class="material-symbols-outlined text-primary-700"
+                            style="font-size: 24px;">shield_person</span>
+                        <p class="text-primary-700 text-lg px-2 font-medium">User Logs</p>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    {{ ui.admin_table(header_data, user_logs, false) }}
+                </div>
+
+                <div class="flex items-center justify-end py-3 px-4 border-t border-border-main">
+                    <a href="{# url_for('admin_logs') #}"
+                        class="flex items-center gap-1 text-primary-600 rounded-lg px-3 py-1 text-sm font-bold hover:bg-contrast transition-all">
+                        View All
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- chart -->
+    <div
+        class="col-span-1 lg:col-span-5 lg:row-span-2 h-fit bg-surface border border-border-main rounded-xl shadow-md overflow-hidden">
+        <div class="flex justify-start items-center px-4 py-3 border-b border-border-main">
+            <span class="material-symbols-outlined text-primary-700" style="font-size: 24px;">analytics</span>
+            <p class="text-primary-700 text-lg px-2 font-medium">System Distribution</p>
+        </div>
+
+        <div class="bg-surface p-4 lg:p-10 h-64 lg:h-80 w-full">
+            <canvas id="sys-dist-chart"></canvas>
+        </div>
+
+        <div class="p-4 bg-backgroundl/20 space-y-2">
+            <h3 class="text-text-main/50 text-xs uppercase tracking-widest font-bold mb-3">Top spending categories</h3>
+            {% for category in cat_labels %}
+            <div
+                class="flex items-center justify-between bg-surface p-3 rounded-xl border border-border-main shadow-sm hover:animate-pulse hover:bg-contrast/10">
+                <div class="flex items-center gap-2">
+                    <p class="text-text-main font-medium text-sm">{{ category }}</p>
+                </div>
+                <p class="text-text-main font-bold text-sm">₹ {{ sys_stats["categorical_volume"][category] }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    let cat_chart;
+
+    const ctx = document.getElementById("sys-dist-chart").getContext('2d');
+    cat_chart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ cat_labels| tojson }},
+        datasets: [{
+            data: {{ cat_values| tojson }},
+        backgroundColor: ['#3b82f6', '#ef4444', '#10b981', '#6366f1', '#f59e0b', '#8b5cf6'],
+        borderWidth: 0,
+        hoverOffset: 15
+            }]
+        },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'right',
+                labels: {
+                    color: document.documentElement.classList.contains('dark') ? "#ffffff" : "#000000",
+                    usePointStyle: true,
+                    padding: 15,
+                }
+            }
+        }
+    }
+    });
+</script>
+{% endblock %}

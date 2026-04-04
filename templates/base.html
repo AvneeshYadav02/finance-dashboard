@@ -117,6 +117,25 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
         {% for category, message in messages %}
+        <div class="pointer-events-auto flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border-2 backdrop-blur-md 
+            {% if category == 'mode-switch' %}
+                bg-success-50/90 border-success-200 text-success-800
+            {% elif category == '404' %}
+                bg-danger-50/90 border-danger-200 text-danger-800
+            {% elif category == 'empty-field' %}
+                bg-danger-50/90 border-info-200 text-info-800
+            {% else %}
+                bg-info-50/90 border-info-200 text-info-800
+            {% endif %}">
+
+            <span class="material-symbols-outlined font-bold">
+                {% if category == 'success' %}check_circle
+                {% elif category == 'danger' %}error
+                {% else %}info{% endif %}
+            </span>
+
+            <p class="text-sm font-black uppercase tracking-tight">{{ message }}</p>
+        </div>
         {% endfor %}
         {% endif %}
         {% endwith %}
@@ -152,7 +171,7 @@
             </a>
         </nav>
 
-        <a href="/switch-role/{{ 'user' if role=='admin' else 'admin' }}" class="mt-auto">
+        <a href="/switch-role/{{ 'user' if role=='admin' else 'admin' }}" class="bottom-0 left-0">
             <div
                 class="flex justify-center items-center gap-2 w-full bg-gradient-to-bl from-primary-600 to-primary-700 text-text-inverse px-4 py-3 rounded-xl shadow-md active:scale-95 transition-all">
                 <span class="material-symbols-outlined">change_circle</span>
@@ -176,18 +195,18 @@
 
         <div class="flex items-center gap-3 lg:gap-6">
             <button
-                class="flex items-center rounded-xl bg-contrast text-contrasttext p-2 active:scale-80 transition-all"
+                class="flex items-center rounded-xl bg-contrast text-contrasttext p-2 active:scale-80 transition-all animate-pulse"
                 onclick="toggleTheme()">
                 <span id="theme-icon" class="material-symbols-outlined text-[20px]">{{ 'light_mode' if
                     session.get('theme')=='dark' else 'dark_mode' }}</span>
             </button>
 
             {% if role == 'admin'%}
-            <button
+            <a href={{ url_for('add_user') }}
                 class="bg-primary-700 text-text-inverse px-3 lg:px-6 py-2 rounded-xl font-bold text-xs lg:text-sm active:scale-95 flex items-center gap-1">
                 <span class="material-symbols-outlined text-sm">add</span>
                 <span class="hidden sm:inline">Quick Add</span>
-            </button>
+            </a>
             {% endif %}
 
             <div class="w-8 h-8 lg:w-10 lg:h-10 rounded-full border-2 border-contrast p-0.5 overflow-hidden">
@@ -239,6 +258,8 @@
 
                 log_chart.options.scales.x.ticks.color = isDark ? '#ffffff56' : '#00000053';
                 log_chart.options.scales.x.border.color = isDark ? '#ffffff33' : '#0000004D';
+
+                log_chart.options.plugins.legend.labels.color = isDark ? "#ffffff" : "#000000";
 
                 log_chart.update();
             }
