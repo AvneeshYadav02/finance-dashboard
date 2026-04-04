@@ -198,14 +198,6 @@
                     "type": "expense"
                 }
             ]
-        },
-        "7": {
-            "metadata": {
-                "name": "",
-                "currency": "INR",
-                "current_balance": ""
-            },
-            "transactions": []
         }
     }
 }
