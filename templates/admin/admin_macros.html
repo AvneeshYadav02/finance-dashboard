@@ -54,3 +54,49 @@
     </table>
 </div>
 {% endmacro %}
+
+{% macro admin_table(headers, rows, action=False) %}
+<div class="overflow-x-auto overflow-y-auto w-full border-t border-border-main max-h-120">
+    <table class="w-full text-sm text-left min-w-200">
+        {% if rows %}
+        <thead class="sticky top-0 bg-backgroundl text-text-muted border-b border-border-main">
+            <tr>
+                {% for header in headers %}
+                <th class="px-4 lg:px-6 py-4 font-bold uppercase tracking-widest text-[10px] text-center">{{ header }}
+                </th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-border-main">
+            {% for row in rows %}
+            <tr class="bg-surface h-20 hover:bg-backgroundl/30 transition-colors group">
+                {% for key in row.keys() %}
+                <td class="px-4 lg:px-6 py-4 text-text-main text-center font-medium">
+                    {{ row.get(key, "-") }}
+                </td>
+                {% endfor %}
+                {% if action %}
+                <td class="px-4 lg:px-6 py-4 text-text-main text-center font-medium">
+                    <div class="flex items-center justify-center gap-2">
+                        {% if action %}
+                        <a href="view-user/{{ row['id'] }}"
+                            class="flex items-center w-fit bg-primary-800/80 border-2 border-primary-800 rounded-xl p-2 hover:bg-primary-800 hover:-translate-y-1 active:scale-80 transition-all">
+                            <span class="material-symbols-outlined text-text-inverse"
+                                style="font-size: 20px;">visibility</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+        {% else %}
+        <div class="flex flex-col items-center justify-center py-16 bg-backgroundl/10">
+            <span class="material-symbols-outlined text-text-light text-5xl mb-2">folder_off</span>
+            <p class="text-text-muted tracking-widest text-sm font-bold uppercase">No records found</p>
+        </div>
+        {% endif %}
+    </table>
+</div>
+{% endmacro %}

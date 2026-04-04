@@ -1,0 +1,159 @@
+{% import "admin/admin_macros.html" as ui %}
+
+{% extends "base.html" %}
+{% block content %}
+<div class="px-4 lg:px-20 py-6 lg:py-10">
+    <div class="flex flex-col gap-4 lg:gap-6 justify-start w-full">
+
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <a href="{{ url_for('log') }}">
+                <div
+                    class="flex items-center gap-2 text-xl lg:text-2xl text-contrast hover:text-primary-600/90 active:scale-90 transition-all">
+                    <span class="material-symbols-outlined"
+                        style="font-size: 32px; lg:font-size: 40px;">arrow_left_alt</span>
+                    <span class="font-medium">Back to Admin Logs</span>
+                </div>
+            </a>
+            <div class="flex items-center gap-3 lg:gap-5 w-full sm:w-auto justify-end">
+                <a href="/add-transaction/{{ user_id }}"
+                    class="flex items-center justify-center bg-info-800/80 border-2 border-info-800 rounded-xl p-2 hover:bg-info-800 hover:scale-110 active:scale-80 transition-all">
+                    <span class="material-symbols-outlined text-text-inverse"
+                        style="font-size: 24px; lg:font-size: 30px;">add_2</span>
+                </a>
+                <a href="/delete-user/{{ user_id }}"
+                    class="flex items-center justify-center bg-danger-800/80 border-2 border-danger-800 rounded-xl p-2 hover:bg-danger-800 hover:scale-110 active:scale-80 transition-all">
+                    <span class="material-symbols-outlined text-text-inverse"
+                        style="font-size: 24px; lg:font-size: 30px;">delete</span>
+                </a>
+            </div>
+        </div>
+
+        <h1
+            class="my-6 lg:mb-20 text-primary-800/90 text-4xl lg:text-8xl text-center font-extrabold animate-pulse leading-tight">
+            {{ active_page|title()}}
+        </h1>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
+            {{ ui.kpi_cards("Balance", user_stats["balance"], "account_balance", user_stats["change"], true) }}
+            {{ ui.kpi_cards("Last Entry", last_transaction_date , "calendar_today", None, false) }}
+        </div>
+
+        <div class="h-fit bg-surface border border-border-main rounded-xl shadow-md overflow-hidden">
+            <div class="flex justify-start items-center px-4 py-3 border-b border-border-main bg-surface">
+                <span class="material-symbols-outlined text-primary-700" style="font-size: 24px;">bar_chart</span>
+                <p class="text-primary-700 text-lg px-2 font-bold uppercase tracking-tight">Expense Analytics</p>
+            </div>
+            <div class="bg-backgroundl p-3 lg:p-10 h-64 lg:h-96 w-full">
+                <canvas id="log-chart"></canvas>
+            </div>
+        </div>
+
+        <div class="w-full">
+            {% set header_data = ['ID', 'Date', 'Amount (₹)', 'Category', 'Type'] %}
+            <div class="bg-surface rounded-xl border border-border-main shadow-md overflow-hidden">
+                <div
+                    class="flex flex-col lg:flex-row items-start lg:items-center justify-between border-b border-border-main p-4 gap-4">
+                    <div class="inline-flex items-center">
+                        <span class="material-symbols-outlined text-primary-700"
+                            style="font-size: 24px;">database</span>
+                        <p class="text-primary-700 text-lg px-2 font-bold uppercase tracking-tight">Records</p>
+                    </div>
+
+                    <div class="w-full lg:w-80">
+                        <div class="relative">
+                            <span
+                                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-light text-sm">search</span>
+                            <input type="text" id="logSearch" placeholder="Search records..."
+                                class="block w-full pl-10 pr-4 py-2 text-sm text-text-main border-2 border-primary-700/30 rounded-full bg-backgroundl focus:border-primary-700 focus:bg-surface focus:outline-none transition-all">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    {{ ui.admin_table(header_data, transactions) }}
+                </div>
+
+                <div class="py-3 bg-backgroundl/20 border-t border-border-main"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Scripts -->
+<script>
+    document.getElementById("logSearch").addEventListener('input', function () {
+        const SearchTerm = this.value.toLowerCase();
+
+        const tableBody = document.querySelector('table tbody');
+        if (!tableBody) return;
+
+        const rows = tableBody.querySelectorAll('tr');
+
+        rows.forEach(row => {
+            const rowData = row.textContent.toLowerCase();
+
+            if (rowData.includes(SearchTerm)) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    });
+</script>
+<script>
+    let log_chart;
+
+    const ctx = document.getElementById("log-chart").getContext('2d');
+
+    log_chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ cat_labels| tojson }},
+        datasets: [{
+            label: "",
+            data: {{ cat_values| tojson }},
+        backgroundColor: [
+            '#3b82f680', '#ef444480', '#10b98180', '#f59e0b80', '#6366f180', '#8b5cf680'
+        ],
+        borderColor: [
+            '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#6366f1', '#8b5cf6'
+        ],
+        borderWidth: 2,
+        borderRadius: 20,
+        maxBarThickness: 120,
+        hoverOffset: 10
+            }]
+        },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                grace: '10%',
+                grid: {
+                    display: false
+                },
+                ticks: {
+                    color: document.documentElement.classList.contains('dark') ? '#ffffff56' : '#0000004D'
+                },
+                border: {
+                    color: document.documentElement.classList.contains('dark') ? '#ffffff33' : '#0000004D'
+                }
+            },
+            x: {
+                grid: { display: false }, // Usually looks cleaner on bar charts
+                ticks: {
+                    color: document.documentElement.classList.contains('dark') ? '#ffffff56' : '#0000004D'
+                },
+                border: {
+                    color: document.documentElement.classList.contains('dark') ? '#ffffff33' : '#0000004D'
+                }
+            }
+        },
+        plugins: {
+            legend: { display: false }
+        }
+    }
+    });
+</script>
+{% endblock %}

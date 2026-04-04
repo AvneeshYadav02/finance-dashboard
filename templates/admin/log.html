@@ -1,0 +1,131 @@
+{% import "admin/admin_macros.html" as ui %}
+
+{% extends "base.html" %}
+{% block content %}
+<div class="flex flex-col gap-6 justify-start w-full">
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6">
+        {{ ui.kpi_cards("Total Transactions", sys_stats["total_transactions"], "database", None, false) }}
+        {{ ui.kpi_cards("Net Incoming", sys_stats["total_incoming"], "arrow_downward_alt", None, true) }}
+        {{ ui.kpi_cards("Net Outgoing", sys_stats["total_outgoing"], "arrow_upward_alt", None, true) }}
+    </div>
+
+    <!-- Chart -->
+    <div class="h-fit bg-surface border border-border-main rounded-xl shadow-md overflow-hidden">
+        <div class="flex justify-start items-center px-4 py-3 border-b border-border-main bg-surface">
+            <span class="material-symbols-outlined text-primary-700" style="font-size: 24px;">analytics</span>
+            <p class="text-primary-700 text-lg px-2 font-bold uppercase tracking-tight">User Volume Comparison</p>
+        </div>
+        <div class="bg-backgroundl p-4 lg:p-10 h-64 lg:h-96 w-full">
+            <canvas id="user-volume-chart"></canvas>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <!-- LOG TABLE -->
+    <div class="overflow-x-auto">
+        {% set header_data = ['ID', 'User', 'Balance (₹)', 'Income (₹)', 'Expense (₹)', 'Actions'] %}
+        <div class="bg-surface rounded-xl border border-border-main shadow-md min-w-[700px] lg:min-w-0">
+            <div class="flex items-center justify-between border-b border-border-main px-4 py-3">
+                <div class="flex items-center">
+                    <span class="material-symbols-outlined text-primary-700"
+                        style="font-size: 24px;">shield_person</span>
+                    <p class="text-primary-700 text-lg px-2 font-medium">User Logs</p>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                    <div class="relative w-full lg:w-80">
+                        <span
+                            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-light text-sm">search</span>
+                        <input type="text" id="adminSearch" placeholder="Search records..."
+                            class="block w-full pl-10 pr-4 py-2 text-sm text-text-main border-2 border-primary-700/30 rounded-full bg-backgroundl focus:border-primary-700 focus:bg-surface focus:outline-none transition-all">
+                    </div>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                {{ ui.admin_table(header_data, user_logs, true) }}
+            </div>
+
+            <div class="py-8 px-4 rounded-xl bg-surface/60 border-t border-border-main backdrop-blur-xl">
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+    // USER COMPARISON CHART
+    let log_chart;
+    const userCtx = document.getElementById('user-volume-chart').getContext('2d');
+    const isDark = document.documentElement.classList.contains('dark');
+
+    log_chart = new Chart(userCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ user_names | tojson }}, // List of names: ['Avneesh', 'Rahul', ...]
+        datasets: [
+        {
+            label: 'Income',
+            data: {{ user_incomes | tojson }},
+        backgroundColor: '#10b98180',
+        borderColor: '#10b981',
+        borderWidth: 2,
+        borderRadius: 8
+                },
+        {
+            label: 'Expense',
+            data: {{ user_expenses | tojson }},
+        backgroundColor: '#ef444480',
+        borderColor: '#ef4444',
+        borderWidth: 2,
+        borderRadius: 8
+                }
+    ]
+        },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: { color: isDark ? '#ffffff10' : '#00000010' },
+                ticks: { color: isDark ? '#ffffff70' : '#00000070' }
+            },
+            x: {
+                grid: { display: false },
+                ticks: { color: isDark ? '#ffffff70' : '#00000070' }
+            }
+        },
+        plugins: {
+            legend: {
+                labels: { color: isDark ? '#ffffff' : '#000000' }
+            }
+        }
+    }
+    });
+
+    // Your existing search and delete logic below...
+</script>
+
+<script>
+    // Master Search Logic for Admins
+    document.getElementById("adminSearch").addEventListener('input', function () {
+        const searchTerm = this.value.toLowerCase();
+        const rows = document.querySelectorAll('table tbody tr');
+
+        rows.forEach(row => {
+            const rowText = row.textContent.toLowerCase();
+            row.style.display = rowText.includes(searchTerm) ? "" : "none";
+        });
+    });
+
+    // Handle Delete Action (Mock Example)
+    function deleteTransaction(id) {
+        if (confirm(`Are you sure you want to delete transaction #${id}? This cannot be undone.`)) {
+            // Your fetch delete logic here
+            console.log(`Deleting ${id}...`);
+            // flash('Transaction deleted successfully', 'success');
+        }
+    }
+</script>
+{% endblock %}
