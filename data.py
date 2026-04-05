@@ -156,10 +156,14 @@ class TransactionManager:
             "type": tx_type,
         }
 
+        user_balance = int(user["metadata"]["current_balance"])
+
         if tx_type == "income":
-            user["metadata"]["current_balance"] += tx_amount
+            user_balance += tx_amount
         else:
-            user["metadata"]["current_balance"] -= tx_amount
+            user_balance -= tx_amount
+
+        user["metadata"]["current_balance"] = str(user_balance)
 
         user["transactions"].append(new_tx)
 
