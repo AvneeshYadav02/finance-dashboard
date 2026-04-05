@@ -129,6 +129,13 @@
                     "amount": 1500,
                     "category": "Entertainment",
                     "type": "expense"
+                },
+                {
+                    "id": "5",
+                    "date": "2026-04-05",
+                    "amount": 0,
+                    "category": "Salary",
+                    "type": "income"
                 }
             ]
         },
@@ -198,14 +205,6 @@
                     "type": "expense"
                 }
             ]
-        },
-        "7": {
-            "metadata": {
-                "name": "",
-                "currency": "INR",
-                "current_balance": ""
-            },
-            "transactions": []
         }
     }
 }

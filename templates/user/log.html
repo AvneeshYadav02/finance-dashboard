@@ -6,7 +6,7 @@
 
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6">
         {{ ui.kpi_cards("Balance", user_stats["balance"], "account_balance", user_stats["change"], true) }}
-        {{ ui.kpi_cards("Total Logs", transactions_count , "list_alt", None, false) }}
+        {{ ui.kpi_cards("Total Transactions", transactions_count , "list_alt", None, false) }}
         {{ ui.kpi_cards("Last Entry", last_transaction_date , "calendar_today", None, false) }}
     </div>
 
@@ -21,7 +21,7 @@
     </div>
 
     <div class="w-full">
-        {% set header_data = ['ID', 'Date', 'Amount', 'Category', 'Type'] %}
+        {% set header_data = ['ID', 'Date', 'Amount (₹)', 'Category', 'Type'] %}
         <div class="bg-surface rounded-xl border border-border-main shadow-md overflow-hidden">
 
             <div
@@ -38,14 +38,6 @@
                         <input type="text" id="logSearch" placeholder="Search records..."
                             class="block w-full pl-10 pr-4 py-2 text-sm text-text-main border-2 border-primary-700/30 rounded-full bg-backgroundl focus:border-primary-700 focus:bg-surface focus:outline-none transition-all">
                     </div>
-
-                    <a href="/export-trans-logs/{{ user_id }}" class="w-full sm:w-auto">
-                        <div
-                            class="flex items-center justify-center gap-2 text-primary-700 bg-backgroundl px-5 py-2 border-2 border-primary-700 rounded-full hover:bg-primary-700 hover:text-white active:scale-95 transition-all">
-                            <span class="material-symbols-outlined text-sm">download</span>
-                            <span class="text-xs font-bold uppercase">Export CSV</span>
-                        </div>
-                    </a>
                 </div>
             </div>
 
