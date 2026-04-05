@@ -184,10 +184,29 @@ def add_user():
 
 @app.route("/add-transaction/<int:u_id>", methods=["POST", "GET"])
 def add_transaction(u_id):
+    role = session.get("role", "admin")
+
+    user = tm.getUser(u_id)
+    user_name = user["metadata"]["name"]
+    user_currency = user["metadata"]["currency"]
+
     if request.method == "POST":
-        t_amount = int(request.form.get("amount"))
+        t_amount = (request.form.get("amount"))
         t_category = (request.form.get("category")).title()
         t_type = (request.form.get("type")).lower()
+
+        try:
+            t_amount = int(t_amount)
+        except ValueError:
+            flash("Please Fill All the Fields", "empty-fields")
+            return render_template(
+                "/admin/add_transaction.html",
+                user_id=u_id,
+                user_currency=user_currency,
+                active_page=user_name,
+                role=role,
+            )
+        
 
         tm.addTransaction(
             user_id=u_id, tx_amount=t_amount, tx_category=t_category, tx_type=t_type
@@ -195,11 +214,6 @@ def add_transaction(u_id):
 
         return redirect(f"/view-user/{u_id}")
     else:
-        role = "admin"
-        user = tm.getUser(u_id)
-        user_name = user["metadata"]["name"]
-        user_currency = user["metadata"]["currency"]
-
         return render_template(
             "admin/add_transaction.html",
             role=role,
